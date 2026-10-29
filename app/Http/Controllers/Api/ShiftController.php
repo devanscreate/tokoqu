@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Register;
 use App\Models\Setting;
 use App\Models\Shift;
+use App\Models\User;
 use App\Services\ShiftService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +23,7 @@ class ShiftController
 
     public function index(Request $request): JsonResponse
     {
+        /** @var User $user */
         $user = $request->user();
         $query = Shift::query()->with(['register', 'cashier', 'forcedBy'])->orderByDesc('opened_at');
 
@@ -37,6 +39,7 @@ class ShiftController
 
     public function current(Request $request): JsonResponse
     {
+        /** @var User $user */
         $user = $request->user();
         $shift = Shift::query()
             ->with(['register', 'cashier', 'cashMovements.user'])
@@ -60,8 +63,10 @@ class ShiftController
             'opening_cash' => ['required', 'integer', 'min:0'],
         ]);
 
+        /** @var User $user */
+        $user = $request->user();
         $result = $this->shiftService->openShift(
-            $request->user(),
+            $user,
             (int) $data['register_id'],
             (int) $data['opening_cash']
         );
@@ -100,9 +105,11 @@ class ShiftController
             ]);
         }
 
+        /** @var User $user */
+        $user = $request->user();
         $result = $this->shiftService->closeShift(
             $shift,
-            $request->user(),
+            $user,
             (int) $data['counted_cash'],
             $data['close_note'] ?? null
         );
@@ -122,9 +129,11 @@ class ShiftController
             'reason' => ['required', 'string', 'min:3', 'max:500'],
         ]);
 
+        /** @var User $user */
+        $user = $request->user();
         $result = $this->shiftService->forceCloseShift(
             $shift,
-            $request->user(),
+            $user,
             (int) $data['counted_cash'],
             $data['reason']
         );
@@ -151,12 +160,14 @@ class ShiftController
             ]);
         }
 
+        /** @var User $user */
+        $user = $request->user();
         $movement = CashMovement::create([
             'shift_id' => $shift->id,
             'type' => $data['type'],
             'amount' => (int) $data['amount'],
             'reason' => $data['reason'],
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'created_at' => now(),
         ]);
 
@@ -167,6 +178,7 @@ class ShiftController
 
     public function showReport(Request $request, Shift $shift): JsonResponse
     {
+        /** @var User $user */
         $user = $request->user();
         if ($shift->cashier_id !== $user->id && ! $user->isManagerOrOwner()) {
             abort(403, 'Anda hanya dapat melihat laporan shift milik sendiri.');

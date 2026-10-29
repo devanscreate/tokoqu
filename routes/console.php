@@ -3,17 +3,21 @@
 use App\Models\AuditLog;
 use App\Models\Product;
 use App\Models\StockMovement;
+use Illuminate\Foundation\Console\ClosureCommand;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
+use Symfony\Component\Console\Command\Command;
 
 /**
  * R3 & Section 13: Nightly job recomputes the sum of stock_movements per product and alerts on drift.
  */
 Artisan::command('pos:reconcile-stock {--fix : Automatically synchronize cached stock_qty to ledger sum}', function () {
+    /** @var ClosureCommand $this */
     $drifts = [];
+    $shouldFix = (bool) $this->option('fix');
 
-    Product::query()->withTrashed()->where('track_stock', true)->chunkById(100, function ($products) use (&$drifts) {
+    Product::query()->withTrashed()->where('track_stock', true)->chunkById(100, function ($products) use (&$drifts, $shouldFix) {
         foreach ($products as $product) {
             $ledgerSum = round((float) StockMovement::query()->where('product_id', $product->id)->sum('qty_delta'), 3);
             $cachedQty = round((float) $product->stock_qty, 3);
@@ -39,7 +43,7 @@ Artisan::command('pos:reconcile-stock {--fix : Automatically synchronize cached 
                     'created_at' => now(),
                 ]);
 
-                if ($this->option('fix')) {
+                if ($shouldFix) {
                     $product->update(['stock_qty' => $ledgerSum]);
                 }
             }
@@ -49,18 +53,19 @@ Artisan::command('pos:reconcile-stock {--fix : Automatically synchronize cached 
     if (empty($drifts)) {
         $this->info('Seluruh stok produk konsisten dengan buku besar stock_movements (0 drift).');
 
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 
     $this->error('Ditemukan '.count($drifts).' ketidakcocokan stok (drift)!');
 
-    return self::FAILURE;
+    return Command::FAILURE;
 })->purpose('Reconcile cached products.stock_qty against append-only stock_movements ledger');
 
 /**
  * W15: Nightly pg_dump kept for 7 days on backup volume.
  */
 Artisan::command('pos:backup-db', function () {
+    /** @var ClosureCommand $this */
     $backupDir = env('BACKUP_PATH', storage_path('app/backups'));
     $retentionDays = (int) env('BACKUP_RETENTION_DAYS', 7);
 
@@ -83,9 +88,10 @@ Artisan::command('pos:backup-db', function () {
         }
     }
 
-    return self::SUCCESS;
+    return Command::SUCCESS;
 })->purpose('Prepare and rotate nightly PostgreSQL backups (W15)');
 
 Schedule::command('pos:reconcile-stock')->dailyAt('01:00');
 Schedule::command('pos:backup-db')->dailyAt('02:00');
+
 

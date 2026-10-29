@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\StockAdjustment;
 use App\Models\StockMovement;
 use App\Models\StockReceipt;
+use App\Models\User;
 use App\Services\InventoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class InventoryController
         protected InventoryService $inventoryService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
         Gate::authorize('manage-inventory');
 
@@ -45,7 +46,9 @@ class InventoryController
             'items.*.unit_cost' => ['required', 'integer', 'min:0'],
         ]);
 
-        $receipt = $this->inventoryService->createStockReceipt($request->user(), $data);
+        /** @var User $user */
+        $user = $request->user();
+        $receipt = $this->inventoryService->createStockReceipt($user, $data);
 
         return response()->json([
             'receipt' => $receipt,
@@ -68,7 +71,9 @@ class InventoryController
             'items.*.expected_system_qty' => ['nullable', 'numeric'],
         ]);
 
-        $adjustment = $this->inventoryService->createStockAdjustment($request->user(), $data);
+        /** @var User $user */
+        $user = $request->user();
+        $adjustment = $this->inventoryService->createStockAdjustment($user, $data);
 
         return response()->json([
             'adjustment' => $adjustment,

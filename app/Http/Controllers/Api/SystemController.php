@@ -57,8 +57,11 @@ class SystemController
             );
         }
 
+        /** @var User $actor */
+        $actor = $request->user();
+
         AuditLog::create([
-            'user_id' => $request->user()->id,
+            'user_id' => $actor->id,
             'action' => 'settings_updated',
             'entity' => 'settings',
             'before' => $before,

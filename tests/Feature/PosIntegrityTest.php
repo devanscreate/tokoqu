@@ -10,14 +10,14 @@ use App\Services\CheckoutService;
 use App\Services\CorrectionService;
 use App\Services\InventoryService;
 use App\Services\ShiftService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-
-uses(RefreshDatabase::class);
+use InvalidArgumentException;
+use Tests\TestCase;
 
 beforeEach(function () {
+    /** @var TestCase $this */
     Setting::updateOrCreate(['key' => 'allow_negative_stock'], ['value' => '0']);
     Setting::updateOrCreate(['key' => 'cashier_discount_limit_pct'], ['value' => '10']);
     Setting::updateOrCreate(['key' => 'tax_mode'], ['value' => 'off']);
@@ -70,6 +70,7 @@ beforeEach(function () {
 });
 
 test('1. selling the last unit succeeds once and blocks subsequent online sale (Section 13)', function () {
+    /** @var TestCase $this */
     $shift = app(ShiftService::class)->openShift($this->cashier, $this->register->id, 100000)['shift'];
     $checkout = app(CheckoutService::class);
 
@@ -92,6 +93,7 @@ test('1. selling the last unit succeeds once and blocks subsequent online sale (
 });
 
 test('2. duplicate client_uuid is idempotent and creates only one sale (R8)', function () {
+    /** @var TestCase $this */
     $shift = app(ShiftService::class)->openShift($this->cashier, $this->register->id, 100000)['shift'];
     $checkout = app(CheckoutService::class);
     $uuid = (string) Str::uuid();
@@ -112,6 +114,7 @@ test('2. duplicate client_uuid is idempotent and creates only one sale (R8)', fu
 });
 
 test('3. opening a second shift on the same register or for the same cashier is rejected (W3)', function () {
+    /** @var TestCase $this */
     $shiftService = app(ShiftService::class);
     $shiftService->openShift($this->cashier, $this->register->id, 100000);
 
@@ -122,6 +125,7 @@ test('3. opening a second shift on the same register or for the same cashier is 
 });
 
 test('4. non-cash payment larger than remaining due is rejected, cash tendered above due computes change (R6)', function () {
+    /** @var TestCase $this */
     $shift = app(ShiftService::class)->openShift($this->cashier, $this->register->id, 100000)['shift'];
     $checkout = app(CheckoutService::class);
 
@@ -143,6 +147,7 @@ test('4. non-cash payment larger than remaining due is rejected, cash tendered a
 });
 
 test('5. void in open shift restores stock and excludes sale from expected cash; blocked after shift closes (W6)', function () {
+    /** @var TestCase $this */
     $shiftService = app(ShiftService::class);
     $shift = $shiftService->openShift($this->cashier, $this->register->id, 100000)['shift'];
 
@@ -160,6 +165,7 @@ test('5. void in open shift restores stock and excludes sale from expected cash;
 });
 
 test('6. two partial returns on one line never exceed line net_total and ledger sum matches stock_qty (Section 13)', function () {
+    /** @var TestCase $this */
     app(InventoryService::class)->createStockReceipt($this->manager, [
         'type' => 'purchase',
         'items' => [['product_id' => $this->product->id, 'qty' => 2, 'unit_cost' => 35000]],
@@ -199,4 +205,5 @@ test('6. two partial returns on one line never exceed line net_total and ledger 
     $ledgerSum = (float) StockMovement::where('product_id', $this->product->id)->sum('qty_delta');
     expect($ledgerSum)->toBe((float) $this->product->fresh()->stock_qty);
 });
+
 

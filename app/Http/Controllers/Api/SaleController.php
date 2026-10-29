@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Sale;
+use App\Models\User;
 use App\Services\ApprovalService;
 use App\Services\CheckoutService;
 use App\Services\CorrectionService;
@@ -61,7 +62,9 @@ class SaleController
             'payments.*.reference' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $sale = $this->checkoutService->processSale($request->user(), $data, false);
+        /** @var User $user */
+        $user = $request->user();
+        $sale = $this->checkoutService->processSale($user, $data, false);
 
         return response()->json([
             'sale' => $sale,
@@ -73,19 +76,22 @@ class SaleController
      */
     public function batchSync(Request $request): JsonResponse
     {
-        $data = $request->validate([
+        $request->validate([
             'sales' => ['required', 'array', 'min:1'],
             'sales.*.client_uuid' => ['required', 'uuid'],
         ]);
 
+        /** @var User $user */
+        $user = $request->user();
+        $salesInput = (array) $request->input('sales', []);
         $results = [];
 
-        foreach ($data['sales'] as $salePayload) {
-            $uuid = (string) $salePayload['client_uuid'];
+        foreach ($salesInput as $salePayload) {
+            $uuid = (string) ($salePayload['client_uuid'] ?? '');
             $alreadyExisted = Sale::query()->where('client_uuid', $uuid)->exists();
 
             try {
-                $sale = $this->checkoutService->processSale($request->user(), $salePayload, true);
+                $sale = $this->checkoutService->processSale($user, (array) $salePayload, true);
                 $results[] = [
                     'client_uuid' => $uuid,
                     'status' => $alreadyExisted ? 'duplicate' : 'created',
@@ -123,9 +129,11 @@ class SaleController
             'approval_token' => ['nullable', 'string'],
         ]);
 
+        /** @var User $user */
+        $user = $request->user();
         $voidedSale = $this->correctionService->voidSale(
             $sale,
-            $request->user(),
+            $user,
             $data['reason'],
             $data['approval_token'] ?? null
         );
@@ -152,7 +160,9 @@ class SaleController
             'items.*.restock' => ['required', 'boolean'],
         ]);
 
-        $saleReturn = $this->correctionService->returnSale($sale, $request->user(), $data);
+        /** @var User $user */
+        $user = $request->user();
+        $saleReturn = $this->correctionService->returnSale($sale, $user, $data);
 
         return response()->json([
             'sale_return' => $saleReturn,
@@ -172,8 +182,10 @@ class SaleController
             'manager_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
+        /** @var User $user */
+        $user = $request->user();
         $approval = $this->approvalService->verifyPinAndCreateToken(
-            $request->user(),
+            $user,
             $data['pin'],
             $data['action'],
             $data['reason'],

@@ -9,10 +9,10 @@ use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SaleReturn;
 use App\Models\Shift;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class ReportController
@@ -172,8 +172,11 @@ class ReportController
 
         $sale->update(['stock_conflict' => false]);
 
+        /** @var User $user */
+        $user = $request->user();
+
         AuditLog::create([
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'action' => 'stock_conflict_resolved',
             'entity' => 'sale',
             'entity_id' => $sale->id,
