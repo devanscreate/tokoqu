@@ -72,6 +72,7 @@ return new class extends Migration
             $table->string('sku', 64)->unique();
             $table->string('barcode', 64)->nullable()->unique();
             $table->string('name', 200);
+            $table->text('image_url')->nullable();
             $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->bigInteger('price'); // R1: Rupiah integer
             $table->bigInteger('cost')->default(0);

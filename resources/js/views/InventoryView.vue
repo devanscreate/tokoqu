@@ -1,11 +1,11 @@
 <template>
-    <div class="max-w-6xl mx-auto p-6 space-y-6">
-        <!-- Header & Sub-Navigation -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-pos-border pb-4">
+    <div class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+        <!-- Header & Friendly Sub-Navigation -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-pos-border pb-4">
             <div>
-                <h1 class="text-xl font-bold uppercase tracking-wider text-pos-black">Katalog Produk & Buku Besar Stok</h1>
+                <h1 class="text-xl font-bold text-pos-black">Kelola Produk, Foto & Stok Gudang</h1>
                 <p class="text-xs text-pos-muted mt-0.5">
-                    Setiap perubahan stok dicatat sebagai baris append-only pada <code class="font-mono">stock_movements</code> (R3, W10, W11).
+                    Tambahkan produk beserta fotonya agar kasir mudah mengenali barang, catat barang masuk, atau lakukan cek stok fisik.
                 </p>
             </div>
             <div class="flex flex-wrap gap-2">
@@ -14,9 +14,9 @@
                     :key="tab.id"
                     @click="activeTab = tab.id"
                     :class="[
-                        'min-h-[40px] px-4 py-2 text-xs font-semibold uppercase tracking-wider border transition-colors',
+                        'min-h-[42px] px-4 py-2 rounded-xl text-xs font-semibold border transition-all',
                         activeTab === tab.id
-                            ? 'bg-pos-black text-pos-gold border-pos-black'
+                            ? 'bg-pos-black text-pos-gold border-pos-black shadow-sm'
                             : 'bg-pos-white text-pos-black border-pos-border hover:border-pos-gold',
                     ]"
                 >
@@ -25,202 +25,308 @@
             </div>
         </div>
 
-        <div v-if="errorMsg" class="p-3.5 bg-red-50 border border-pos-danger text-xs text-pos-danger font-semibold">
+        <div v-if="errorMsg" class="p-3.5 rounded-xl bg-red-50 border border-pos-danger text-xs text-pos-danger font-semibold">
             {{ errorMsg }}
         </div>
-        <div v-if="successMsg" class="p-3.5 bg-pos-gold-tint border border-pos-gold text-xs text-pos-black font-semibold">
+        <div v-if="successMsg" class="p-3.5 rounded-xl bg-pos-gold-tint border border-pos-gold text-xs text-pos-black font-semibold">
             {{ successMsg }}
         </div>
 
-        <!-- TAB 1: PRODUCTS & CATEGORIES -->
-        <div v-if="activeTab === 'products'" class="space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Product Form -->
-                <form @submit.prevent="saveProduct" class="card-pos p-5 space-y-3">
-                    <div class="border-b border-pos-border pb-2 flex items-center justify-between">
-                        <h2 class="text-xs font-bold uppercase tracking-wider">
-                            {{ productForm.id ? 'Edit Produk' : 'Tambah Produk Baru (W1.5)' }}
+        <!-- TAB 1: PRODUCTS, PHOTOS & CATEGORIES -->
+        <div v-if="activeTab === 'products'" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Product Form with Photo Upload -->
+            <form @submit.prevent="saveProduct" class="lg:col-span-4 card-pos p-5 space-y-4 self-start">
+                <div class="border-b border-pos-border pb-3 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-sm font-bold text-pos-black">
+                            {{ productForm.id ? 'Ubah Data & Foto Produk' : 'Tambah Produk Baru' }}
                         </h2>
-                        <button v-if="productForm.id" type="button" @click="resetProductForm" class="text-xs text-pos-muted underline">
-                            Batal Edit
+                        <p class="text-[11px] text-pos-muted">Lengkapi informasi barang dan unggah foto produk.</p>
+                    </div>
+                    <button
+                        v-if="productForm.id"
+                        type="button"
+                        @click="resetProductForm"
+                        class="text-xs text-pos-danger font-medium hover:underline"
+                    >
+                        Batal Edit
+                    </button>
+                </div>
+
+                <!-- PHOTO UPLOADER & PREVIEW -->
+                <div class="p-3.5 rounded-2xl bg-pos-alabaster border border-pos-border flex items-center gap-4">
+                    <img
+                        :src="getProductImage(productForm)"
+                        alt="Preview Produk"
+                        class="w-20 h-20 rounded-xl object-cover bg-pos-white border border-pos-border shrink-0"
+                    />
+                    <div class="space-y-2 flex-1 min-w-0">
+                        <div class="text-xs font-semibold text-pos-black">Foto Produk</div>
+                        <div class="flex flex-wrap gap-2">
+                            <label class="cursor-pointer px-3 py-1.5 rounded-xl bg-pos-black text-pos-gold text-xs font-semibold hover:bg-pos-charcoal transition-colors">
+                                Pilih Foto
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    @change="handleProductImageUpload"
+                                    class="hidden"
+                                />
+                            </label>
+                            <button
+                                v-if="productForm.image_url"
+                                type="button"
+                                @click="productForm.image_url = ''"
+                                class="px-2.5 py-1.5 rounded-xl border border-pos-border bg-pos-white text-xs text-pos-danger"
+                            >
+                                Hapus Foto
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-pos-muted leading-snug">
+                            Foto otomatis diperkecil agar aplikasi tetap ringan dan tampil saat offline.
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-pos-black mb-1">Nama Produk *</label>
+                    <input
+                        v-model="productForm.name"
+                        type="text"
+                        required
+                        placeholder="Contoh: Kopi Arabika Gayo 250g"
+                        class="input-pos"
+                    />
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-pos-black mb-1">Kode Barang (SKU) *</label>
+                        <input
+                            v-model="productForm.sku"
+                            type="text"
+                            required
+                            placeholder="MNM-001"
+                            class="input-pos font-mono"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-pos-black mb-1">Nomor Barcode</label>
+                        <input
+                            v-model="productForm.barcode"
+                            type="text"
+                            placeholder="Scan / ketik barcode"
+                            class="input-pos font-mono"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-pos-black mb-1">Kategori Produk</label>
+                    <div class="flex gap-2">
+                        <select v-model="productForm.category_id" class="input-pos flex-1">
+                            <option :value="null">-- Pilih Kategori --</option>
+                            <option v-for="c in store.categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                        </select>
+                        <button
+                            type="button"
+                            @click="promptNewCategory"
+                            class="btn-outline px-3.5"
+                            title="Buat kategori baru"
+                        >
+                            + Kategori
                         </button>
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">SKU *</label>
-                            <input v-model="productForm.sku" type="text" required class="input-pos font-mono" />
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Barcode</label>
-                            <input v-model="productForm.barcode" type="text" class="input-pos font-mono" />
-                        </div>
-                    </div>
-
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Nama Produk *</label>
-                        <input v-model="productForm.name" type="text" required class="input-pos" />
+                        <label class="block text-xs font-semibold text-pos-black mb-1">Harga Jual Kasir (Rp) *</label>
+                        <input
+                            v-model.number="productForm.price"
+                            type="number"
+                            min="0"
+                            required
+                            class="input-pos font-mono font-semibold"
+                        />
                     </div>
-
                     <div>
-                        <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Kategori</label>
-                        <div class="flex gap-2">
-                            <select v-model="productForm.category_id" class="input-pos flex-1">
-                                <option :value="null">-- Tanpa Kategori --</option>
-                                <option v-for="c in store.categories" :key="c.id" :value="c.id">{{ c.name }}</option>
-                            </select>
-                            <button type="button" @click="promptNewCategory" class="btn-outline px-3" title="Tambah Kategori">+</button>
-                        </div>
+                        <label class="block text-xs font-semibold text-pos-black mb-1">Harga Modal / Beli (Rp)</label>
+                        <input
+                            v-model.number="productForm.cost"
+                            type="number"
+                            min="0"
+                            class="input-pos font-mono"
+                        />
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Harga Jual (Rp) *</label>
-                            <input v-model.number="productForm.price" type="number" min="0" required class="input-pos font-mono" />
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Harga Modal / HPP (Rp)</label>
-                            <input v-model.number="productForm.cost" type="number" min="0" required class="input-pos font-mono" />
-                        </div>
+                <div class="grid grid-cols-2 gap-3 items-start pt-1">
+                    <div>
+                        <label class="block text-xs font-semibold text-pos-black mb-1">Batas Pengingat Stok Tipis</label>
+                        <input
+                            v-model.number="productForm.min_stock"
+                            type="number"
+                            min="0"
+                            step="0.001"
+                            class="input-pos font-mono"
+                        />
                     </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Stok Minimum Alert</label>
-                            <input v-model.number="productForm.min_stock" type="number" min="0" step="0.001" class="input-pos font-mono" />
-                        </div>
-                        <div class="flex flex-col justify-end space-y-1 text-xs">
-                            <label class="inline-flex items-center gap-2">
-                                <input v-model="productForm.track_stock" type="checkbox" />
-                                <span>Lacak Stok (Ledger)</span>
-                            </label>
-                            <label class="inline-flex items-center gap-2">
-                                <input v-model="productForm.allow_decimal_qty" type="checkbox" />
-                                <span>Izinkan Desimal (Kg)</span>
-                            </label>
-                            <label class="inline-flex items-center gap-2">
-                                <input v-model="productForm.is_active" type="checkbox" />
-                                <span>Produk Aktif</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-gold w-full">
-                        {{ productForm.id ? 'Simpan Perubahan Produk' : 'Simpan Produk Baru' }}
-                    </button>
-                </form>
-
-                <!-- Product Table & CSV Import -->
-                <div class="lg:col-span-2 card-pos flex flex-col">
-                    <div class="px-4 py-3 bg-pos-black text-pos-white border-b border-pos-gold flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase tracking-wider">Daftar Katalog Produk ({{ store.products.length }})</span>
-                        <label class="cursor-pointer px-3 py-1 bg-pos-charcoal border border-pos-gold text-pos-gold text-xs font-semibold uppercase">
-                            Impor CSV (W1.5)
-                            <input type="file" accept=".csv" @change="handleCsvFile" class="hidden" />
+                    <div class="space-y-2 text-xs pt-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input v-model="productForm.track_stock" type="checkbox" class="rounded" />
+                            <span>Hitung Stok Otomatis</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input v-model="productForm.allow_decimal_qty" type="checkbox" class="rounded" />
+                            <span>Bisa Beli Desimal / Timbangan (Kg)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input v-model="productForm.is_active" type="checkbox" class="rounded" />
+                            <span>Tampilkan di Layar Kasir</span>
                         </label>
                     </div>
-                    <div class="overflow-x-auto flex-1">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-pos-stone border-b border-pos-border uppercase text-[11px] text-pos-muted">
-                                    <th class="p-2.5">SKU / Barcode</th>
-                                    <th class="p-2.5">Nama Produk</th>
-                                    <th class="p-2.5 text-right">Harga Jual</th>
-                                    <th class="p-2.5 text-right">HPP</th>
-                                    <th class="p-2.5 text-right">Stok (R3)</th>
-                                    <th class="p-2.5 text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-pos-border tabular-nums">
-                                <tr v-for="p in store.products" :key="p.id" class="hover:bg-pos-alabaster">
-                                    <td class="p-2.5 font-mono">
-                                        <div class="font-bold">{{ p.sku }}</div>
-                                        <div class="text-[10px] text-pos-muted">{{ p.barcode || '-' }}</div>
-                                    </td>
-                                    <td class="p-2.5">
-                                        <div class="font-semibold">{{ p.name }}</div>
-                                        <span v-if="!p.is_active" class="text-[10px] text-pos-danger font-bold uppercase">[NONAKTIF]</span>
-                                    </td>
-                                    <td class="p-2.5 text-right font-mono">{{ formatRupiah(p.price) }}</td>
-                                    <td class="p-2.5 text-right font-mono text-pos-muted">{{ formatRupiah(p.cost) }}</td>
-                                    <td class="p-2.5 text-right font-mono font-bold">
-                                        {{ p.track_stock ? formatQty(p.stock_qty) : '∞' }}
-                                    </td>
-                                    <td class="p-2.5 text-right space-x-1.5 whitespace-nowrap">
-                                        <button
-                                            @click="editProduct(p)"
-                                            class="px-2 py-1 border border-pos-border bg-pos-white hover:border-pos-gold"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            @click="openStockCard(p)"
-                                            class="px-2 py-1 bg-pos-black text-pos-gold font-mono text-[11px]"
-                                        >
-                                            Kartu Stok
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                </div>
+
+                <button type="submit" class="btn-gold w-full">
+                    {{ productForm.id ? 'Simpan Perubahan Produk' : 'Tambahkan ke Daftar Produk' }}
+                </button>
+            </form>
+
+            <!-- Product List Table with Thumbnails -->
+            <div class="lg:col-span-8 card-pos overflow-hidden flex flex-col">
+                <div class="px-5 py-4 bg-pos-black text-pos-white border-b border-pos-gold flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-sm font-bold">Daftar Katalog Barang ({{ store.products.length }} Produk)</h2>
+                        <p class="text-[11px] text-pos-stone">Klik tombol "Ubah / Foto" pada baris barang untuk mengganti foto atau harga.</p>
                     </div>
+                    <label class="cursor-pointer px-3.5 py-2 rounded-xl bg-pos-charcoal border border-pos-gold text-pos-gold text-xs font-semibold hover:bg-pos-gold hover:text-white transition-colors self-start sm:self-auto">
+                        Impor Produk dari Excel/CSV
+                        <input type="file" accept=".csv" @change="handleCsvFile" class="hidden" />
+                    </label>
+                </div>
+
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-pos-stone border-b border-pos-border text-[11px] font-semibold text-pos-muted">
+                                <th class="p-3">Produk & Foto</th>
+                                <th class="p-3">Kode / Barcode</th>
+                                <th class="p-3 text-right">Harga Jual</th>
+                                <th class="p-3 text-right">Harga Modal</th>
+                                <th class="p-3 text-right">Sisa Stok</th>
+                                <th class="p-3 text-right">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-pos-border tabular-nums">
+                            <tr v-for="p in store.products" :key="p.id" class="hover:bg-pos-alabaster">
+                                <td class="p-3">
+                                    <div class="flex items-center gap-3">
+                                        <img
+                                            :src="getProductImage(p)"
+                                            :alt="p.name"
+                                            loading="lazy"
+                                            class="w-11 h-11 rounded-xl object-cover bg-pos-alabaster border border-pos-border shrink-0"
+                                        />
+                                        <div>
+                                            <div class="font-semibold text-sm text-pos-black">{{ p.name }}</div>
+                                            <span
+                                                v-if="!p.is_active"
+                                                class="inline-block mt-0.5 px-2 py-0.5 rounded bg-red-50 text-pos-danger text-[10px] font-semibold"
+                                            >
+                                                Disembunyikan
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-3 font-mono">
+                                    <div class="font-bold text-pos-black">{{ p.sku }}</div>
+                                    <div class="text-[11px] text-pos-muted">{{ p.barcode || 'Tanpa barcode' }}</div>
+                                </td>
+                                <td class="p-3 text-right font-mono font-semibold text-pos-black">{{ formatRupiah(p.price) }}</td>
+                                <td class="p-3 text-right font-mono text-pos-muted">{{ formatRupiah(p.cost) }}</td>
+                                <td class="p-3 text-right font-mono font-bold">
+                                    <span
+                                        v-if="p.track_stock"
+                                        :class="Number(p.stock_qty) <= Number(p.min_stock) ? 'text-pos-danger' : 'text-pos-black'"
+                                    >
+                                        {{ formatQty(p.stock_qty) }}
+                                    </span>
+                                    <span v-else class="text-pos-muted">Tanpa Stok</span>
+                                </td>
+                                <td class="p-3 text-right space-x-1.5 whitespace-nowrap">
+                                    <button
+                                        @click="editProduct(p)"
+                                        class="px-3 py-1.5 rounded-xl border border-pos-border bg-pos-white hover:border-pos-gold font-medium"
+                                    >
+                                        Ubah / Foto
+                                    </button>
+                                    <button
+                                        @click="openStockCard(p)"
+                                        class="px-3 py-1.5 rounded-xl bg-pos-black text-pos-gold font-medium"
+                                    >
+                                        Riwayat Stok
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 2: RECEIVE STOCK (W10) -->
-        <div v-if="activeTab === 'receipt'" class="card-pos p-5 space-y-4">
+        <!-- TAB 2: RECEIVE STOCK -->
+        <div v-if="activeTab === 'receipt'" class="card-pos p-6 space-y-5">
             <div class="border-b border-pos-border pb-3">
-                <h2 class="text-sm font-bold uppercase tracking-wider">Penerimaan Stok Barang Masuk (W10)</h2>
-                <p class="text-xs text-pos-muted">
-                    Penerimaan stok yang sudah dikonfirmasi bersifat permanen (immutable) dan langsung menambah buku besar stok serta memperbarui HPP.
+                <h2 class="text-base font-bold text-pos-black">Catat Barang Masuk dari Supplier / Gudang</h2>
+                <p class="text-xs text-pos-muted mt-0.5">
+                    Gunakan menu ini setiap kali toko menerima kiriman barang baru agar jumlah stok di layar kasir langsung bertambah.
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3.5">
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-pos-muted mb-1">Tipe Penerimaan</label>
+                    <label class="block text-xs font-semibold text-pos-black mb-1">Jenis Barang Masuk</label>
                     <select v-model="receiptForm.type" class="input-pos">
-                        <option value="purchase">Pembelian Supplier (Purchase)</option>
-                        <option value="opening">Saldo Stok Awal (Opening - W1.6)</option>
+                        <option value="purchase">Belanja dari Supplier</option>
+                        <option value="opening">Stok Awal Toko</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-pos-muted mb-1">Nama Supplier</label>
-                    <input v-model="receiptForm.supplier_name" type="text" placeholder="PT Sumber Makmur" class="input-pos" />
+                    <label class="block text-xs font-semibold text-pos-black mb-1">Nama Supplier / Pemasok</label>
+                    <input v-model="receiptForm.supplier_name" type="text" placeholder="Contoh: Agen Sembako Jaya" class="input-pos" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-pos-muted mb-1">No. Surat Jalan / Referensi</label>
-                    <input v-model="receiptForm.reference" type="text" placeholder="SJ-2026-001" class="input-pos font-mono" />
+                    <label class="block text-xs font-semibold text-pos-black mb-1">Nomor Nota Supplier (Opsional)</label>
+                    <input v-model="receiptForm.reference" type="text" placeholder="Contoh: INV-001" class="input-pos font-mono" />
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-pos-muted mb-1">Catatan</label>
-                    <input v-model="receiptForm.note" type="text" class="input-pos" />
+                    <label class="block text-xs font-semibold text-pos-black mb-1">Catatan Tambahan</label>
+                    <input v-model="receiptForm.note" type="text" placeholder="Keterangan barang masuk" class="input-pos" />
                 </div>
             </div>
 
-            <div class="space-y-2">
+            <div class="space-y-2.5">
                 <div
                     v-for="(row, rIdx) in receiptForm.items"
                     :key="rIdx"
-                    class="grid grid-cols-1 sm:grid-cols-4 gap-2 items-end bg-pos-alabaster p-3 border border-pos-border"
+                    class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end bg-pos-alabaster p-3.5 rounded-2xl border border-pos-border"
                 >
                     <div class="sm:col-span-2">
-                        <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Produk</label>
+                        <label class="block text-xs font-semibold text-pos-black mb-1">Pilih Barang</label>
                         <select v-model="row.product_id" @change="onReceiptProductChange(row)" class="input-pos">
                             <option value="" disabled>-- Pilih Produk --</option>
                             <option v-for="p in store.products" :key="p.id" :value="p.id">
-                                {{ p.sku }} — {{ p.name }} (Stok: {{ formatQty(p.stock_qty) }})
+                                {{ p.sku }} — {{ p.name }} (Stok saat ini: {{ formatQty(p.stock_qty) }})
                             </option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Qty Masuk (&gt; 0)</label>
-                        <input v-model.number="row.qty" type="number" min="0.001" step="0.001" class="input-pos font-mono" />
+                        <label class="block text-xs font-semibold text-pos-black mb-1">Jumlah Barang Masuk</label>
+                        <input v-model.number="row.qty" type="number" min="0.001" step="0.001" class="input-pos font-mono font-bold" />
                     </div>
                     <div class="flex gap-2">
                         <div class="flex-1">
-                            <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Harga Beli / Unit (Rp)</label>
+                            <label class="block text-xs font-semibold text-pos-black mb-1">Harga Beli per Satuan (Rp)</label>
                             <input v-model.number="row.unit_cost" type="number" min="0" class="input-pos font-mono" />
                         </div>
                         <button
@@ -229,60 +335,60 @@
                             @click="receiptForm.items.splice(rIdx, 1)"
                             class="btn-outline text-pos-danger px-3"
                         >
-                            ×
+                            Hapus
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-between">
+            <div class="flex flex-wrap justify-between gap-3">
                 <button
                     type="button"
                     @click="receiptForm.items.push({ product_id: '', qty: 1, unit_cost: 0 })"
                     class="btn-outline text-xs"
                 >
-                    + Tambah Baris Barang
+                    + Tambah Baris Barang Lain
                 </button>
                 <button type="button" @click="submitStockReceipt" class="btn-gold">
-                    Konfirmasi Penerimaan Stok (W10)
+                    Simpan Barang Masuk & Tambah Stok
                 </button>
             </div>
         </div>
 
-        <!-- TAB 3: STOCK ADJUSTMENT & OPNAME (W11) -->
-        <div v-if="activeTab === 'adjustment'" class="card-pos p-5 space-y-4">
+        <!-- TAB 3: STOCK ADJUSTMENT & OPNAME -->
+        <div v-if="activeTab === 'adjustment'" class="card-pos p-6 space-y-5">
             <div class="border-b border-pos-border pb-3">
-                <h2 class="text-sm font-bold uppercase tracking-wider">Penyesuaian Stok & Stock Opname (W11)</h2>
-                <p class="text-xs text-pos-muted">
-                    Masukkan jumlah stok fisik hasil hitung (Counted Qty). Jika stok produk bergerak saat layar dibuka, sistem akan meminta hitung ulang (W11.3).
+                <h2 class="text-base font-bold text-pos-black">Cek Fisik & Penyesuaian Stok (Stock Opname)</h2>
+                <p class="text-xs text-pos-muted mt-0.5">
+                    Masukkan jumlah barang nyata yang ada di rak toko. Sistem akan otomatis menyesuaikan selisihnya.
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-pos-muted mb-1">Alasan Penyesuaian *</label>
+                    <label class="block text-xs font-semibold text-pos-black mb-1">Alasan Penyesuaian Stok *</label>
                     <select v-model="adjustmentForm.reason" class="input-pos">
-                        <option value="opname">Stock Opname Rutin</option>
-                        <option value="damaged">Barang Rusak (Damaged)</option>
-                        <option value="expired">Barang Kedaluwarsa (Expired)</option>
-                        <option value="lost">Barang Hilang / Selisih (Lost)</option>
-                        <option value="correction">Koreksi Input Penerimaan (Correction)</option>
+                        <option value="opname">Hitung Stok Rutin (Stock Opname)</option>
+                        <option value="damaged">Barang Rusak / Tidak Layak Jual</option>
+                        <option value="expired">Barang Kedaluwarsa</option>
+                        <option value="lost">Barang Hilang / Terselip</option>
+                        <option value="correction">Koreksi Salah Catat Sebelumnya</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-pos-muted mb-1">Catatan Audit</label>
-                    <input v-model="adjustmentForm.note" type="text" placeholder="Catatan stock opname..." class="input-pos" />
+                    <label class="block text-xs font-semibold text-pos-black mb-1">Catatan Keterangan</label>
+                    <input v-model="adjustmentForm.note" type="text" placeholder="Contoh: Cek rak mingguan" class="input-pos" />
                 </div>
             </div>
 
-            <div class="space-y-2">
+            <div class="space-y-2.5">
                 <div
                     v-for="(row, aIdx) in adjustmentForm.items"
                     :key="aIdx"
-                    class="grid grid-cols-1 sm:grid-cols-4 gap-2 items-end bg-pos-alabaster p-3 border border-pos-border"
+                    class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end bg-pos-alabaster p-3.5 rounded-2xl border border-pos-border"
                 >
                     <div class="sm:col-span-2">
-                        <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Produk</label>
+                        <label class="block text-xs font-semibold text-pos-black mb-1">Pilih Barang</label>
                         <select v-model="row.product_id" @change="onAdjustmentProductSelect(row)" class="input-pos">
                             <option value="" disabled>-- Pilih Produk --</option>
                             <option v-for="p in store.products.filter((x) => x.track_stock)" :key="p.id" :value="p.id">
@@ -291,12 +397,12 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Stok Sistem Saat Dibuka</label>
+                        <label class="block text-xs font-semibold text-pos-muted mb-1">Stok Tercatat di Sistem</label>
                         <input :value="row.expected_system_qty" type="text" disabled class="input-pos font-mono bg-pos-stone" />
                     </div>
                     <div class="flex gap-2">
                         <div class="flex-1">
-                            <label class="block text-[11px] font-semibold uppercase text-pos-muted mb-1">Stok Fisik Dihitung</label>
+                            <label class="block text-xs font-semibold text-pos-black mb-1">Jumlah Fisik Sebenarnya</label>
                             <input v-model.number="row.counted_qty" type="number" min="0" step="0.001" class="input-pos font-mono font-bold" />
                         </div>
                         <button
@@ -305,66 +411,63 @@
                             @click="adjustmentForm.items.splice(aIdx, 1)"
                             class="btn-outline text-pos-danger px-3"
                         >
-                            ×
+                            Hapus
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-between">
+            <div class="flex flex-wrap justify-between gap-3">
                 <button
                     type="button"
                     @click="adjustmentForm.items.push({ product_id: '', expected_system_qty: 0, counted_qty: 0 })"
                     class="btn-outline text-xs"
                 >
-                    + Tambah Baris Opname
+                    + Tambah Barang Lain
                 </button>
                 <button type="button" @click="submitStockAdjustment" class="btn-gold">
-                    Simpan Penyesuaian Stok (W11)
+                    Simpan Hasil Cek Stok
                 </button>
             </div>
         </div>
 
-        <!-- STOCK CARD MODAL (W14) -->
+        <!-- STOCK CARD MODAL -->
         <div v-if="stockCardData" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
-            <div class="bg-pos-white border-2 border-pos-black w-full max-w-3xl flex flex-col max-h-[88vh]">
-                <div class="px-5 py-3.5 bg-pos-black text-pos-white border-b border-pos-gold flex items-center justify-between">
+            <div class="bg-pos-white border border-pos-border rounded-3xl w-full max-w-3xl flex flex-col max-h-[88vh] overflow-hidden shadow-2xl">
+                <div class="px-6 py-4 bg-pos-black text-pos-white border-b border-pos-gold flex items-center justify-between">
                     <div>
-                        <h3 class="font-semibold text-sm uppercase tracking-wider">
-                            Kartu Stok (Stock Ledger): {{ stockCardData.product.name }}
+                        <h3 class="font-semibold text-sm">
+                            Riwayat Keluar-Masuk Stok: {{ stockCardData.product.name }}
                         </h3>
-                        <div class="text-xs font-mono text-pos-gold">
-                            SKU: {{ stockCardData.product.sku }} · Cached Stok: {{ stockCardData.cached_stock_qty }} · Sum Ledger: {{ stockCardData.ledger_sum }}
-                            ({{ stockCardData.is_reconciled ? 'RECONCILED ✓' : 'DRIFT !' }})
+                        <div class="text-xs font-mono text-pos-gold mt-0.5">
+                            Kode: {{ stockCardData.product.sku }} · Stok Saat Ini: {{ stockCardData.cached_stock_qty }}
                         </div>
                     </div>
-                    <button @click="stockCardData = null" class="text-xs font-mono text-pos-white hover:text-pos-gold">[ESC]</button>
+                    <button @click="stockCardData = null" class="text-xs text-pos-white hover:text-pos-gold">Tutup [ESC]</button>
                 </div>
 
                 <div class="overflow-y-auto flex-1">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-pos-stone border-b border-pos-border uppercase text-[11px] text-pos-muted">
-                                <th class="p-3">Waktu</th>
-                                <th class="p-3">Tipe Mutasi</th>
-                                <th class="p-3 text-right">Qty Delta</th>
-                                <th class="p-3">Referensi</th>
+                            <tr class="bg-pos-stone border-b border-pos-border text-[11px] font-semibold text-pos-muted">
+                                <th class="p-3">Tanggal & Jam</th>
+                                <th class="p-3">Keterangan Aktivitas</th>
+                                <th class="p-3 text-right">Perubahan Stok</th>
                                 <th class="p-3">Petugas</th>
-                                <th class="p-3">Keterangan</th>
+                                <th class="p-3">Catatan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-pos-border tabular-nums">
                             <tr v-for="m in stockCardData.movements" :key="m.id">
                                 <td class="p-3 font-mono">{{ formatDateTime(m.created_at) }}</td>
-                                <td class="p-3 font-mono uppercase font-bold">{{ m.type }}</td>
+                                <td class="p-3 font-semibold capitalize">{{ movementLabel(m.type) }}</td>
                                 <td
                                     class="p-3 text-right font-mono font-bold"
                                     :class="m.qty_delta > 0 ? 'text-pos-success' : 'text-pos-danger'"
                                 >
                                     {{ m.qty_delta > 0 ? '+' + formatQty(m.qty_delta) : formatQty(m.qty_delta) }}
                                 </td>
-                                <td class="p-3 font-mono text-[11px]">{{ m.ref_type }} #{{ m.ref_id }}</td>
-                                <td class="p-3">{{ m.user?.name || 'System' }}</td>
+                                <td class="p-3">{{ m.user?.name || 'Sistem' }}</td>
                                 <td class="p-3 text-pos-muted">{{ m.note }}</td>
                             </tr>
                         </tbody>
@@ -379,7 +482,7 @@
 import { ref } from 'vue';
 import { usePosStore } from '../stores/posStore';
 import { apiRequest } from '../utils/api';
-import { formatDateTime, formatQty, formatRupiah } from '../utils/format';
+import { compressImageFile, formatDateTime, formatQty, formatRupiah, getProductImage } from '../utils/format';
 
 const store = usePosStore();
 const activeTab = ref('products');
@@ -388,9 +491,9 @@ const successMsg = ref('');
 const stockCardData = ref(null);
 
 const tabs = [
-    { id: 'products', label: 'Produk & Kategori' },
-    { id: 'receipt', label: ' Barang Masuk (W10)' },
-    { id: 'adjustment', label: 'Opname & Penyesuaian (W11)' },
+    { id: 'products', label: '1. Daftar Produk & Foto' },
+    { id: 'receipt', label: '2. Catat Barang Masuk' },
+    { id: 'adjustment', label: '3. Cek Fisik / Opname Stok' },
 ];
 
 const productForm = ref({
@@ -398,6 +501,7 @@ const productForm = ref({
     sku: '',
     barcode: '',
     name: '',
+    image_url: '',
     category_id: null,
     price: 0,
     cost: 0,
@@ -421,12 +525,25 @@ const adjustmentForm = ref({
     items: [{ product_id: '', expected_system_qty: 0, counted_qty: 0 }],
 });
 
+function movementLabel(type) {
+    const map = {
+        opening: 'Stok Awal Toko',
+        purchase: 'Barang Masuk Supplier',
+        sale: 'Terjual di Kasir',
+        void: 'Pembatalan Nota (Void)',
+        return: 'Retur Pelanggan',
+        adjustment: 'Penyesuaian / Opname',
+    };
+    return map[type] || type;
+}
+
 function resetProductForm() {
     productForm.value = {
         id: null,
         sku: '',
         barcode: '',
         name: '',
+        image_url: '',
         category_id: null,
         price: 0,
         cost: 0,
@@ -443,6 +560,7 @@ function editProduct(p) {
         sku: p.sku,
         barcode: p.barcode || '',
         name: p.name,
+        image_url: p.image_url || '',
         category_id: p.category_id,
         price: p.price,
         cost: p.cost,
@@ -451,10 +569,24 @@ function editProduct(p) {
         allow_decimal_qty: Boolean(p.allow_decimal_qty),
         is_active: Boolean(p.is_active),
     };
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function handleProductImageUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    errorMsg.value = '';
+    try {
+        productForm.value.image_url = await compressImageFile(file, 320, 0.82);
+    } catch (err) {
+        errorMsg.value = err.message;
+    } finally {
+        event.target.value = '';
+    }
 }
 
 async function promptNewCategory() {
-    const name = window.prompt('Masukkan nama kategori baru:');
+    const name = window.prompt('Masukkan nama kategori barang baru:');
     if (!name) return;
     try {
         await apiRequest('/categories', {
@@ -476,13 +608,13 @@ async function saveProduct() {
                 method: 'PUT',
                 body: productForm.value,
             });
-            successMsg.value = 'Produk berhasil diperbarui.';
+            successMsg.value = 'Data dan foto produk berhasil diperbarui.';
         } else {
             await apiRequest('/products', {
                 method: 'POST',
                 body: productForm.value,
             });
-            successMsg.value = 'Produk baru berhasil ditambahkan (stok awal 0, gunakan Penerimaan Stok untuk menambah saldo).';
+            successMsg.value = 'Produk baru berhasil disimpan. Gunakan tab "Catat Barang Masuk" untuk mengisi stok awalnya.';
         }
         resetProductForm();
         await store.syncCatalog(true);
@@ -500,7 +632,7 @@ async function handleCsvFile(event) {
     const text = await file.text();
     const lines = text.split(/\r?\n/).filter((l) => l.trim());
     if (lines.length < 2) {
-        errorMsg.value = 'File CSV harus memiliki baris header dan minimal 1 baris data.';
+        errorMsg.value = 'File CSV harus memiliki baris judul kolom dan minimal 1 baris produk.';
         return;
     }
 
@@ -550,7 +682,7 @@ async function submitStockReceipt() {
             method: 'POST',
             body: receiptForm.value,
         });
-        successMsg.value = `Penerimaan stok ${res.receipt.receipt_no} berhasil disimpan ke buku besar (W10).`;
+        successMsg.value = `Barang masuk (${res.receipt.receipt_no}) berhasil disimpan dan stok telah bertambah.`;
         receiptForm.value.items = [{ product_id: '', qty: 10, unit_cost: 0 }];
         await store.syncCatalog(true);
     } catch (err) {
@@ -574,7 +706,7 @@ async function submitStockAdjustment() {
             method: 'POST',
             body: adjustmentForm.value,
         });
-        successMsg.value = `Penyesuaian stok ${res.adjustment.adjustment_no} berhasil dicatat (W11).`;
+        successMsg.value = `Hasil cek stok (${res.adjustment.adjustment_no}) berhasil disimpan.`;
         adjustmentForm.value.items = [{ product_id: '', expected_system_qty: 0, counted_qty: 0 }];
         await store.syncCatalog(true);
     } catch (err) {
@@ -591,4 +723,3 @@ async function openStockCard(product) {
     }
 }
 </script>
-

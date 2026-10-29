@@ -7,13 +7,23 @@ use App\Models\Product;
 use App\Models\Register;
 use App\Models\Setting;
 use Carbon\Carbon;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 
 class CatalogController
 {
+    protected function ensureProductImageColumn(): void
+    {
+        if (! Schema::hasColumn('products', 'image_url')) {
+            Schema::table('products', function (Blueprint $table) {
+                $table->text('image_url')->nullable();
+            });
+        }
+    }
     /**
      * GET /api/v1/catalog?since=
      * Delta sync of products, categories, registers, settings (inactive/trashed products included so caches can remove them).
@@ -80,11 +90,13 @@ class CatalogController
     public function storeProduct(Request $request): JsonResponse
     {
         Gate::authorize('manage-catalog');
+        $this->ensureProductImageColumn();
 
         $data = $request->validate([
             'sku' => ['required', 'string', 'max:64', 'unique:products,sku'],
             'barcode' => ['nullable', 'string', 'max:64', 'unique:products,barcode'],
             'name' => ['required', 'string', 'max:200'],
+            'image_url' => ['nullable', 'string', 'max:200000'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'price' => ['required', 'integer', 'min:0'],
             'cost' => ['required', 'integer', 'min:0'],
@@ -105,11 +117,13 @@ class CatalogController
     public function updateProduct(Request $request, Product $product): JsonResponse
     {
         Gate::authorize('manage-catalog');
+        $this->ensureProductImageColumn();
 
         $data = $request->validate([
             'sku' => ['required', 'string', 'max:64', 'unique:products,sku,'.$product->id],
             'barcode' => ['nullable', 'string', 'max:64', 'unique:products,barcode,'.$product->id],
             'name' => ['required', 'string', 'max:200'],
+            'image_url' => ['nullable', 'string', 'max:200000'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'price' => ['required', 'integer', 'min:0'],
             'cost' => ['required', 'integer', 'min:0'],

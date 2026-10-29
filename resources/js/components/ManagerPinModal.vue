@@ -1,17 +1,17 @@
 <template>
     <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-        <div class="bg-pos-white border border-pos-black w-full max-w-md">
-            <div class="px-5 py-3.5 bg-pos-black text-pos-white border-b border-pos-gold flex items-center justify-between">
+        <div class="bg-pos-white border border-pos-border rounded-3xl overflow-hidden shadow-2xl w-full max-w-md">
+            <div class="px-6 py-4 bg-pos-black text-pos-white border-b border-pos-gold flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 bg-pos-gold"></span>
-                    <h3 class="font-semibold text-sm uppercase tracking-wider">Otorisasi PIN Manager</h3>
+                    <span class="w-2 h-2 rounded-full bg-pos-gold"></span>
+                    <h3 class="font-semibold text-sm">Persetujuan PIN Manajer</h3>
                 </div>
-                <button @click="$emit('close')" class="text-xs font-mono text-pos-white hover:text-pos-gold">[ESC]</button>
+                <button @click="$emit('close')" class="text-xs text-pos-white hover:text-pos-gold">Tutup [ESC]</button>
             </div>
 
-            <form @submit.prevent="submitPin" class="p-5 space-y-4">
-                <div class="p-3 bg-pos-gold-tint border border-pos-gold text-xs text-pos-black">
-                    Tindakan <strong>{{ actionLabel }}</strong> memerlukan persetujuan PIN Manager atau Owner di layar ini (hanya tersedia saat online).
+            <form @submit.prevent="submitPin" class="p-6 space-y-4">
+                <div class="p-3.5 rounded-xl bg-pos-gold-tint border border-pos-gold text-xs text-pos-black leading-relaxed">
+                    Tindakan <strong>{{ actionLabel }}</strong> memerlukan izin Manajer atau Pemilik Toko dengan memasukkan PIN di bawah ini.
                 </div>
 
                 <div v-if="errorMsg" class="p-3 bg-red-50 border border-pos-danger text-xs text-pos-danger font-medium">

@@ -286,6 +286,7 @@ export const usePosStore = defineStore('pos', {
                     product_id: product.id,
                     sku: product.sku,
                     name: product.name,
+                    image_url: product.image_url || null,
                     qty: Number(qtyToAdd),
                     unit_price: Number(product.price),
                     unit_cost: Number(product.cost || 0),

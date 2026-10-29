@@ -1,16 +1,16 @@
 <template>
     <div v-if="receipt" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-        <div class="bg-pos-white border border-pos-black w-full max-w-md flex flex-col max-h-[90vh]">
+        <div class="bg-pos-white border border-pos-border rounded-3xl overflow-hidden shadow-2xl w-full max-w-md flex flex-col max-h-[90vh]">
             <!-- Modal Header (Hidden on Print) -->
-            <div class="no-print flex items-center justify-between px-5 py-3.5 bg-pos-black text-pos-white border-b border-pos-gold">
+            <div class="no-print flex items-center justify-between px-6 py-4 bg-pos-black text-pos-white border-b border-pos-gold">
                 <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 bg-pos-gold inline-block"></span>
-                    <h3 class="font-semibold text-sm uppercase tracking-wider">
-                        {{ receipt.type === 'z_report' ? 'Laporan Tutup Shift (Z-Report)' : 'Struk Transaksi' }}
+                    <span class="w-2 h-2 rounded-full bg-pos-gold inline-block"></span>
+                    <h3 class="font-semibold text-sm">
+                        {{ receipt.type === 'z_report' ? 'Laporan Ringkasan Tutup Shift' : 'Struk Belanja Pelanggan' }}
                     </h3>
                 </div>
-                <button @click="$emit('close')" class="text-pos-white hover:text-pos-gold text-sm font-mono px-2 py-1">
-                    [ESC] TUTUP
+                <button @click="$emit('close')" class="text-pos-white hover:text-pos-gold text-xs px-2 py-1">
+                    Tutup [ESC]
                 </button>
             </div>
 
