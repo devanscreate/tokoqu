@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .tabular-nums {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@layer components {
+    .btn-primary {
+        @apply min-h-[44px] px-4 py-2.5 bg-pos-black text-pos-white font-medium text-sm tracking-wide border border-pos-black transition-colors duration-150 hover:bg-pos-charcoal active:bg-black disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+    }
+
+    .btn-gold {
+        @apply min-h-[44px] px-4 py-2.5 bg-pos-gold text-pos-white font-semibold text-sm tracking-wide border border-pos-gold transition-colors duration-150 hover:bg-pos-gold-hover active:bg-pos-gold-hover disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+    }
+
+    .btn-outline {
+        @apply min-h-[44px] px-4 py-2.5 bg-pos-white text-pos-black font-medium text-sm border border-pos-border transition-colors duration-150 hover:border-pos-gold hover:bg-pos-gold-tint disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+    }
+
+    .btn-danger {
+        @apply min-h-[44px] px-4 py-2.5 bg-pos-danger text-pos-white font-medium text-sm border border-pos-danger transition-colors duration-150 hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+    }
+
+    .input-pos {
+        @apply min-h-[44px] w-full px-3.5 py-2 bg-pos-white text-pos-black text-sm border border-pos-border focus:outline-none focus:border-pos-gold transition-colors duration-150;
+    }
+
+    .card-pos {
+        @apply bg-pos-white border border-pos-border;
+    }
+}
+
+/* 58mm / 80mm Thermal Receipt Print Stylesheet (Section 3 & 9) */
+@media print {
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+
+    body * {
+        visibility: hidden;
+    }
+
+    #printable-receipt,
+    #printable-receipt * {
+        visibility: visible;
+    }
+
+    #printable-receipt {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 76mm;
+        padding: 2mm;
+        margin: 0;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: monospace;
+        font-size: 11px;
+        line-height: 1.35;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}
+

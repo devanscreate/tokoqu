@@ -1,0 +1,66 @@
+name: Tokoqu POS CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  quality-and-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: tokoqu_test
+          POSTGRES_USER: tokoqu
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_pgsql, pgsql, bcmath, intl, zip
+          coverage: none
+
+      - name: Install Composer Dependencies & Security Audit
+        run: |
+          composer install --no-interaction --prefer-dist
+          composer audit
+
+      - name: Run Laravel Pint & Larastan
+        run: |
+          vendor/bin/pint --test
+          vendor/bin/phpstan analyse --memory-limit=512M
+
+      - name: Run Pest Integrity Tests
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: tokoqu_test
+          DB_USERNAME: tokoqu
+          DB_PASSWORD: secret
+        run: vendor/bin/pest
+
+      - name: Build Vue 3 PWA Assets & NPM Audit
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: |
+          npm install
+          npm audit --audit-level=high
+          npm run build
+

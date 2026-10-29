@@ -1,0 +1,80 @@
+# ==============================================================================
+# Application Dependencies & Package Managers
+# ==============================================================================
+/vendor/
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==============================================================================
+# Build Artifacts, PWA Service Worker & Bundler Output
+# ==============================================================================
+/public/build/
+/public/hot
+/public/storage
+/public/sw.js
+/public/workbox-*.js
+/public/registerSW.js
+/public/manifest.webmanifest
+
+# ==============================================================================
+# Environment & Sensitive Credentials
+# ==============================================================================
+.env
+.env.backup
+.env.production
+.env.testing
+.env.*.local
+!.env.example
+
+# ==============================================================================
+# Laravel Runtime, Cache, Logs & Local Backups
+# ==============================================================================
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+/storage/app/*
+!/storage/app/.gitignore
+!/storage/app/public/
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+!/storage/framework/cache/data/
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+*.sql
+*.sql.gz
+*.dump
+
+# ==============================================================================
+# Testing, Static Analysis & Code Quality Cache
+# ==============================================================================
+.phpunit.result.cache
+.phpunit.cache/
+.phpstan.cache/
+.pint.cache
+/coverage/
+
+# ==============================================================================
+# IDE, Editor & OS Metadata
+# ==============================================================================
+/.idea/
+/.vscode/
+/.fleet/
+/.zed/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
