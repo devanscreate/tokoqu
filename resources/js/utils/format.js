@@ -107,13 +107,64 @@ export function compressImageFile(file, maxSize = 320, quality = 0.82) {
     });
 }
 
+export const AVAILABLE_THEMES = [
+    {
+        id: 'white-blue',
+        label: 'Putih & Biru',
+        primaryHex: '#2563EB',
+        darkHex: '#1E3A8A',
+        bgHex: '#DBEAFE',
+        borderHex: '#93C5FD',
+    },
+    {
+        id: 'white-green',
+        label: 'Putih & Hijau',
+        primaryHex: '#059669',
+        darkHex: '#065F46',
+        bgHex: '#D1FAE5',
+        borderHex: '#6EE7B7',
+    },
+    {
+        id: 'white-red',
+        label: 'Putih & Merah',
+        primaryHex: '#DC2626',
+        darkHex: '#991B1B',
+        bgHex: '#FEE2E2',
+        borderHex: '#FCA5A5',
+    },
+    {
+        id: 'white-yellow',
+        label: 'Putih & Kuning',
+        primaryHex: '#CA8A04',
+        darkHex: '#713F12',
+        bgHex: '#FEF9C3',
+        borderHex: '#FACC15',
+    },
+    {
+        id: 'gold-black',
+        label: 'Putih, Emas & Hitam',
+        primaryHex: '#B8923A',
+        darkHex: '#0F0F0F',
+        bgHex: '#F9F3E1',
+        borderHex: '#D8CFB8',
+    },
+];
+
 /**
  * Clean, lightweight SVG fallback thumbnail when a product has no custom photo yet.
+ * Adapts automatically to the active color theme.
  */
-export function getProductImage(product) {
+export function getProductImage(product, themeId = null) {
     if (product?.image_url && String(product.image_url).trim() !== '') {
         return product.image_url;
     }
+    const activeThemeId =
+        themeId ||
+        (typeof document !== 'undefined' ? document.documentElement.getAttribute('data-theme') : null) ||
+        'white-blue';
+
+    const theme = AVAILABLE_THEMES.find((t) => t.id === activeThemeId) || AVAILABLE_THEMES[0];
+
     const name = String(product?.name || 'Produk').trim();
     const words = name.split(/\s+/).filter(Boolean);
     const initials =
@@ -122,11 +173,11 @@ export function getProductImage(product) {
             : name.slice(0, 2).toUpperCase();
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-        <rect width="200" height="200" rx="24" fill="#F9F5EB"/>
-        <circle cx="100" cy="82" r="38" fill="#FFFFFF" stroke="#E2DFD7" stroke-width="2"/>
-        <text x="100" y="92" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="26" font-weight="700" fill="#B8923A">${initials}</text>
-        <rect x="44" y="138" width="112" height="22" rx="11" fill="#0F0F0F"/>
-        <text x="100" y="153" text-anchor="middle" font-family="monospace" font-size="11" font-weight="600" fill="#D8BE7E">${String(product?.sku || 'ITEM').slice(0, 12)}</text>
+        <rect width="200" height="200" rx="24" fill="${theme.bgHex}"/>
+        <circle cx="100" cy="82" r="40" fill="#FFFFFF" stroke="${theme.borderHex}" stroke-width="3"/>
+        <text x="100" y="92" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="800" fill="${theme.primaryHex}">${initials}</text>
+        <rect x="38" y="138" width="124" height="24" rx="12" fill="${theme.darkHex}"/>
+        <text x="100" y="154" text-anchor="middle" font-family="monospace" font-size="11" font-weight="700" fill="#FFFFFF">${String(product?.sku || 'ITEM').slice(0, 12)}</text>
     </svg>`;
 
     return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;

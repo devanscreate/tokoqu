@@ -5,6 +5,7 @@ import { calculateCartTotals, generateUuid, getTodayYymmdd } from '../utils/form
 
 export const usePosStore = defineStore('pos', {
     state: () => ({
+        theme: localStorage.getItem('pos_color_theme') || 'white-blue',
         user: null,
         sessionExpired: false,
         currentShift: null,
@@ -103,7 +104,16 @@ export const usePosStore = defineStore('pos', {
     },
 
     actions: {
+        setTheme(themeId) {
+            this.theme = themeId;
+            localStorage.setItem('pos_color_theme', themeId);
+            if (typeof document !== 'undefined') {
+                document.documentElement.setAttribute('data-theme', themeId);
+            }
+        },
+
         async initApp() {
+            this.setTheme(this.theme);
             window.addEventListener('online', () => {
                 this.isOnline = true;
                 this.syncCatalog();

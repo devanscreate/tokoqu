@@ -120,7 +120,7 @@
                             <!-- Product Photo Container -->
                             <div class="relative w-full h-28 sm:h-32 rounded-xl overflow-hidden bg-pos-alabaster border border-pos-border/60 mb-2.5">
                                 <img
-                                    :src="getProductImage(product)"
+                                    :src="getProductImage(product, store.theme)"
                                     :alt="product.name"
                                     loading="lazy"
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
@@ -163,11 +163,11 @@
                         </div>
 
                         <!-- Price & Quick Add Icon -->
-                        <div class="mt-2.5 pt-2 border-t border-pos-border/70 px-0.5 flex items-center justify-between">
-                            <span class="font-mono font-bold text-sm text-pos-black tabular-nums">
+                        <div class="mt-2.5 pt-2 border-t border-pos-border px-0.5 flex items-center justify-between">
+                            <span class="font-mono font-extrabold text-sm sm:text-base text-pos-black tabular-nums">
                                 {{ formatRupiah(product.price) }}
                             </span>
-                            <span class="w-7 h-7 rounded-lg bg-pos-alabaster group-hover:bg-pos-gold group-hover:text-white text-pos-black flex items-center justify-center font-bold text-sm transition-colors">
+                            <span class="w-8 h-8 rounded-xl bg-pos-gold-tint border border-pos-border group-hover:bg-pos-gold text-pos-black flex items-center justify-center font-bold text-base transition-colors">
                                 +
                             </span>
                         </div>
@@ -217,10 +217,10 @@
             ]"
         >
             <!-- Order Header -->
-            <div class="px-5 py-4 border-b border-pos-border flex items-center justify-between">
+            <div class="px-5 py-4 bg-pos-alabaster border-b-2 border-pos-border flex items-center justify-between">
                 <div>
                     <h2 class="font-bold text-base text-pos-black">Detail Pesanan</h2>
-                    <p class="text-xs text-pos-muted">
+                    <p class="text-xs font-medium text-pos-muted">
                         {{
                             store.cart.items.length > 0
                                 ? `${store.cart.items.length} jenis barang di keranjang`
@@ -290,7 +290,7 @@
                     <div class="flex items-center gap-3">
                         <!-- Mini Thumbnail -->
                         <img
-                            :src="getProductImage(item)"
+                            :src="getProductImage(item, store.theme)"
                             :alt="item.name"
                             class="w-12 h-12 rounded-xl object-cover bg-pos-white border border-pos-border shrink-0"
                         />

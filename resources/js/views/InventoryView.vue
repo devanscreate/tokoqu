@@ -56,7 +56,7 @@
                 <!-- PHOTO UPLOADER & PREVIEW -->
                 <div class="p-3.5 rounded-2xl bg-pos-alabaster border border-pos-border flex items-center gap-4">
                     <img
-                        :src="getProductImage(productForm)"
+                        :src="getProductImage(productForm, store.theme)"
                         alt="Preview Produk"
                         class="w-20 h-20 rounded-xl object-cover bg-pos-white border border-pos-border shrink-0"
                     />
@@ -222,7 +222,7 @@
                                 <td class="p-3">
                                     <div class="flex items-center gap-3">
                                         <img
-                                            :src="getProductImage(p)"
+                                            :src="getProductImage(p, store.theme)"
                                             :alt="p.name"
                                             loading="lazy"
                                             class="w-11 h-11 rounded-xl object-cover bg-pos-alabaster border border-pos-border shrink-0"

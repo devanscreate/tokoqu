@@ -9,22 +9,23 @@ export default {
         extend: {
             colors: {
                 pos: {
-                    black: '#0F0F0F',
-                    charcoal: '#1C1C1C',
-                    white: '#FFFFFF',
-                    alabaster: '#FAF9F6',
-                    stone: '#F2F0EA',
-                    border: '#E2DFD7',
-                    muted: '#6E6B64',
+                    black: 'rgb(var(--pos-black) / <alpha-value>)',
+                    charcoal: 'rgb(var(--pos-charcoal) / <alpha-value>)',
+                    ink: 'rgb(var(--pos-ink) / <alpha-value>)',
+                    white: 'rgb(var(--pos-white) / <alpha-value>)',
+                    alabaster: 'rgb(var(--pos-alabaster) / <alpha-value>)',
+                    stone: 'rgb(var(--pos-stone) / <alpha-value>)',
+                    border: 'rgb(var(--pos-border) / <alpha-value>)',
+                    muted: 'rgb(var(--pos-muted) / <alpha-value>)',
                     gold: {
-                        DEFAULT: '#B8923A',
-                        hover: '#9E7B2B',
-                        light: '#D8BE7E',
-                        tint: '#F9F5EB',
+                        DEFAULT: 'rgb(var(--pos-gold) / <alpha-value>)',
+                        hover: 'rgb(var(--pos-gold-hover) / <alpha-value>)',
+                        light: 'rgb(var(--pos-gold-light) / <alpha-value>)',
+                        tint: 'rgb(var(--pos-gold-tint) / <alpha-value>)',
                     },
-                    danger: '#991B1B',
-                    success: '#166534',
-                    warning: '#92400E',
+                    danger: '#B91C1C',
+                    success: '#15803D',
+                    warning: '#B45309',
                 },
             },
             fontFamily: {
@@ -35,4 +36,3 @@ export default {
     },
     plugins: [],
 };
-

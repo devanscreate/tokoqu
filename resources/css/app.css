@@ -2,10 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   MULTI-THEME COLOR SYSTEM (100% Instant CSS Variables, High-Contrast Text)
+   ========================================================================== */
+:root,
+[data-theme="white-blue"] {
+    /* Paduan Putih & Biru (Default Terang & Jelas) */
+    --pos-black: 30 58 138;        /* #1E3A8A Deep Royal Blue for primary headers/bars */
+    --pos-charcoal: 29 78 216;     /* #1D4ED8 Rich Blue hover */
+    --pos-ink: 15 23 42;           /* #0F172A Ultra-crisp dark slate for body text */
+    --pos-white: 255 255 255;      /* #FFFFFF Pure White */
+    --pos-alabaster: 240 246 255;  /* #F0F6FF Visible Soft Blue-White background */
+    --pos-stone: 224 236 255;      /* #E0ECFF Distinct Light Blue secondary surface */
+    --pos-border: 186 210 248;     /* #BAD2F8 Clear Blue-Tinted border */
+    --pos-muted: 51 65 85;         /* #334155 High-contrast readable secondary text */
+    --pos-gold: 37 99 235;         /* #2563EB Vibrant Blue accent */
+    --pos-gold-hover: 29 78 216;   /* #1D4ED8 */
+    --pos-gold-light: 147 197 253; /* #93C5FD */
+    --pos-gold-tint: 219 234 254;  /* #DBEAFE Soft Blue highlight box */
+    --pos-gold-on-dark: 191 219 254; /* #BFDBFE Bright Ice Blue text on dark blue header */
+    --pos-on-gold: 255 255 255;    /* #FFFFFF White text on blue buttons */
+}
+
+[data-theme="white-green"] {
+    /* Paduan Putih & Hijau */
+    --pos-black: 6 95 70;          /* #065F46 Deep Emerald Green for primary headers/bars */
+    --pos-charcoal: 4 120 87;      /* #047857 Rich Emerald hover */
+    --pos-ink: 15 28 22;           /* #0F1C16 Crisp dark forest ink for body text */
+    --pos-white: 255 255 255;      /* #FFFFFF Pure White */
+    --pos-alabaster: 238 251 244;  /* #EEFAF4 Visible Soft Mint-White background */
+    --pos-stone: 209 244 226;      /* #D1F4E2 Distinct Light Green secondary surface */
+    --pos-border: 158 222 192;     /* #9EDEC0 Clear Green-Tinted border */
+    --pos-muted: 45 74 61;         /* #2D4A3D High-contrast readable secondary text */
+    --pos-gold: 5 150 105;         /* #059669 Vibrant Emerald Green accent */
+    --pos-gold-hover: 4 120 87;    /* #047857 */
+    --pos-gold-light: 110 231 183; /* #6EE7B7 */
+    --pos-gold-tint: 209 250 229;  /* #D1FAE5 Soft Emerald highlight box */
+    --pos-gold-on-dark: 167 243 208; /* #A7F3D0 Bright Mint text on dark green header */
+    --pos-on-gold: 255 255 255;    /* #FFFFFF White text on green buttons */
+}
+
+[data-theme="white-red"] {
+    /* Paduan Putih & Merah */
+    --pos-black: 153 27 27;        /* #991B1B Deep Ruby Red for primary headers/bars */
+    --pos-charcoal: 185 28 28;     /* #B91C1C Rich Crimson hover */
+    --pos-ink: 28 16 16;           /* #1C1010 Crisp dark warm ink for body text */
+    --pos-white: 255 255 255;      /* #FFFFFF Pure White */
+    --pos-alabaster: 255 242 242;  /* #FFF2F2 Visible Soft Rose-White background */
+    --pos-stone: 254 226 226;      /* #FEE2E2 Distinct Light Red secondary surface */
+    --pos-border: 248 180 180;     /* #F8B4B4 Clear Red-Tinted border */
+    --pos-muted: 87 45 45;         /* #572D2D High-contrast readable secondary text */
+    --pos-gold: 220 38 38;         /* #DC2626 Vibrant Crimson Red accent */
+    --pos-gold-hover: 185 28 28;   /* #B91C1C */
+    --pos-gold-light: 252 165 165; /* #FCA5A5 */
+    --pos-gold-tint: 254 226 226;  /* #FEE2E2 Soft Rose highlight box */
+    --pos-gold-on-dark: 254 202 202; /* #FECACA Bright Rose text on dark red header */
+    --pos-on-gold: 255 255 255;    /* #FFFFFF White text on red buttons */
+}
+
+[data-theme="white-yellow"] {
+    /* Paduan Putih & Kuning (Kontras Tinggi & Mudah Dibaca) */
+    --pos-black: 113 63 18;        /* #713F12 Deep Golden Bronze for primary headers/bars */
+    --pos-charcoal: 146 64 14;     /* #92400E Rich Amber hover */
+    --pos-ink: 28 25 23;           /* #1C1917 Crisp dark stone ink for body text */
+    --pos-white: 255 255 255;      /* #FFFFFF Pure White */
+    --pos-alabaster: 254 252 232;  /* #FEFCE8 Visible Sunny Cream-White background */
+    --pos-stone: 254 240 138;      /* #FEF08A Distinct Soft Yellow secondary surface */
+    --pos-border: 250 204 21;      /* #FACC15 Clear Golden-Yellow border */
+    --pos-muted: 87 67 28;         /* #57431C High-contrast readable secondary text */
+    --pos-gold: 234 179 8;         /* #EAB308 Vibrant Sunny Yellow-Gold accent */
+    --pos-gold-hover: 202 138 4;   /* #CA8A04 */
+    --pos-gold-light: 253 224 71;  /* #FDE047 */
+    --pos-gold-tint: 254 249 195;  /* #FEF9C3 Soft Yellow highlight box */
+    --pos-gold-on-dark: 254 240 138; /* #FEF08A Bright Yellow text on dark bronze header */
+    --pos-on-gold: 28 25 23;       /* #1C1917 Dark text on bright yellow buttons for maximum readability! */
+}
+
+[data-theme="gold-black"] {
+    /* Paduan Putih, Emas & Hitam */
+    --pos-black: 15 15 15;         /* #0F0F0F Deep Obsidian Black */
+    --pos-charcoal: 34 34 34;      /* #222222 Charcoal */
+    --pos-ink: 15 15 15;           /* #0F0F0F Crisp Black body text */
+    --pos-white: 255 255 255;      /* #FFFFFF Pure White */
+    --pos-alabaster: 250 248 242;  /* #FAF8F2 Warm Alabaster */
+    --pos-stone: 242 237 223;      /* #F2EDDF Soft Gold-Stone */
+    --pos-border: 216 207 184;     /* #D8CFB8 Warm Gold-Tinted border */
+    --pos-muted: 75 72 65;         /* #4B4841 High-contrast readable secondary text */
+    --pos-gold: 184 146 58;        /* #B8923A Architectural Gold */
+    --pos-gold-hover: 158 123 43;  /* #9E7B2B */
+    --pos-gold-light: 216 190 126; /* #D8BE7E */
+    --pos-gold-tint: 249 243 225;  /* #F9F3E1 Soft Gold highlight box */
+    --pos-gold-on-dark: 243 212 132; /* #F3D484 Bright Gold text on black header */
+    --pos-on-gold: 255 255 255;    /* #FFFFFF */
+}
+
 @layer base {
     body {
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         -webkit-tap-highlight-color: transparent;
+        color: rgb(var(--pos-ink));
+        background-color: rgb(var(--pos-alabaster));
+        line-height: 1.5;
     }
 
     .tabular-nums {
@@ -13,25 +110,44 @@
     }
 }
 
+/* Automatic High-Contrast Text Guardrails so NO theme combination ever has unreadable text */
+.text-pos-black {
+    color: rgb(var(--pos-ink)) !important;
+}
+
+.bg-pos-black .text-pos-gold,
+.bg-pos-charcoal .text-pos-gold,
+.bg-pos-black.text-pos-gold,
+.bg-pos-charcoal.text-pos-gold {
+    color: rgb(var(--pos-gold-on-dark)) !important;
+}
+
+.bg-pos-gold {
+    color: rgb(var(--pos-on-gold)) !important;
+}
+
 @layer components {
     .btn-primary {
-        @apply min-h-[44px] px-4 py-2.5 rounded-xl bg-pos-black text-pos-white font-medium text-sm tracking-wide border border-pos-black transition-all duration-150 hover:bg-pos-charcoal active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+        @apply min-h-[44px] px-4 py-2.5 rounded-xl bg-pos-black text-pos-white font-semibold text-sm tracking-wide border border-pos-black transition-all duration-150 hover:bg-pos-charcoal active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2 shadow-sm;
     }
 
     .btn-gold {
-        @apply min-h-[44px] px-4 py-2.5 rounded-xl bg-pos-gold text-pos-white font-semibold text-sm tracking-wide border border-pos-gold transition-all duration-150 hover:bg-pos-gold-hover active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+        @apply min-h-[44px] px-4 py-2.5 rounded-xl bg-pos-gold font-bold text-sm tracking-wide border border-pos-gold transition-all duration-150 hover:bg-pos-gold-hover active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2 shadow-sm;
+        color: rgb(var(--pos-on-gold)) !important;
     }
 
     .btn-outline {
-        @apply min-h-[44px] px-4 py-2.5 rounded-xl bg-pos-white text-pos-black font-medium text-sm border border-pos-border transition-all duration-150 hover:border-pos-gold hover:bg-pos-gold-tint active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+        @apply min-h-[44px] px-4 py-2.5 rounded-xl bg-pos-white font-semibold text-sm border border-pos-border transition-all duration-150 hover:border-pos-gold hover:bg-pos-gold-tint active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+        color: rgb(var(--pos-ink));
     }
 
     .btn-danger {
-        @apply min-h-[44px] px-4 py-2.5 rounded-xl bg-pos-danger text-pos-white font-medium text-sm border border-pos-danger transition-all duration-150 hover:opacity-90 active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
+        @apply min-h-[44px] px-4 py-2.5 rounded-xl bg-pos-danger text-white font-semibold text-sm border border-pos-danger transition-all duration-150 hover:opacity-90 active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center gap-2;
     }
 
     .input-pos {
-        @apply min-h-[44px] w-full px-3.5 py-2 rounded-xl bg-pos-white text-pos-black text-sm border border-pos-border focus:outline-none focus:border-pos-gold focus:ring-2 focus:ring-pos-gold/20 transition-all duration-150;
+        @apply min-h-[44px] w-full px-3.5 py-2 rounded-xl bg-pos-white text-sm font-medium border border-pos-border focus:outline-none focus:border-pos-gold focus:ring-2 focus:ring-pos-gold/25 transition-all duration-150;
+        color: rgb(var(--pos-ink));
     }
 
     .card-pos {
