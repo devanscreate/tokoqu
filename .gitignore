@@ -23,11 +23,16 @@ pnpm-debug.log*
 # Environment & Sensitive Credentials
 # ==============================================================================
 .env
-.env.backup
-.env.production
-.env.testing
-.env.*.local
+.env.*
 !.env.example
+/storage/*.key
+
+# ==============================================================================
+# Internal Docs & Local AI / Dev Guardrails (Do Not Push)
+# ==============================================================================
+AGENTS.md
+CLAUDE.md
+PRD*.md
 
 # ==============================================================================
 # Laravel Runtime, Cache, Logs & Local Backups
