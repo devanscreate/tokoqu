@@ -59,6 +59,24 @@
                         {{ store.heldCarts.length }}
                     </span>
                 </button>
+
+                <!-- Catalog Layout Switcher -->
+                <div class="inline-flex items-center bg-pos-white rounded-xl border border-pos-border p-1 shrink-0">
+                    <button
+                        v-for="mode in layoutModes"
+                        :key="mode.id"
+                        type="button"
+                        @click="setCatalogLayout(mode.id)"
+                        :class="[
+                            'px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap',
+                            catalogLayout === mode.id
+                                ? 'bg-pos-black text-pos-white shadow-sm'
+                                : 'text-pos-muted hover:text-pos-black',
+                        ]"
+                    >
+                        {{ mode.label }}
+                    </button>
+                </div>
             </div>
 
             <!-- Category Filter Pills -->
@@ -102,9 +120,68 @@
                 </button>
             </div>
 
-            <!-- Product Cards Grid with Photos -->
+            <!-- Product Cards Grid / List with Uniform Square Photos -->
             <div class="flex-1 overflow-y-auto pr-1 pb-20 lg:pb-4">
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+                <!-- LIST LAYOUT MODE -->
+                <div v-if="catalogLayout === 'list'" class="space-y-2">
+                    <button
+                        v-for="product in filteredProducts"
+                        :key="product.id"
+                        @click="onTapProduct(product)"
+                        class="w-full text-left bg-pos-white rounded-2xl border transition-all p-2.5 flex items-center justify-between gap-3 group hover:shadow-sm active:scale-[0.99]"
+                        :class="
+                            qtyInCart(product.id) > 0
+                                ? 'border-pos-gold ring-2 ring-pos-gold/25'
+                                : 'border-pos-border hover:border-pos-gold'
+                        "
+                    >
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="relative w-14 h-14 aspect-square rounded-xl overflow-hidden bg-pos-alabaster border border-pos-border shrink-0">
+                                <img
+                                    :src="getProductImage(product, store.theme)"
+                                    :alt="product.name"
+                                    loading="lazy"
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div class="min-w-0">
+                                <div class="font-bold text-sm text-pos-black truncate">{{ product.name }}</div>
+                                <div class="text-xs text-pos-muted font-mono flex items-center gap-2 mt-0.5">
+                                    <span>{{ product.sku }}</span>
+                                    <span v-if="product.track_stock" class="font-sans font-semibold text-pos-black">
+                                        • Stok: {{ formatQty(product.stock_qty) }}
+                                    </span>
+                                    <span
+                                        v-if="qtyInCart(product.id) > 0"
+                                        class="px-2 py-0.5 rounded-full bg-pos-black text-pos-white font-sans font-bold text-[10px]"
+                                    >
+                                        {{ formatQty(qtyInCart(product.id)) }}x dipilih
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 shrink-0">
+                            <span class="font-mono font-extrabold text-sm sm:text-base text-pos-black tabular-nums">
+                                {{ formatRupiah(product.price) }}
+                            </span>
+                            <span class="w-9 h-9 rounded-xl bg-pos-gold-tint border border-pos-border group-hover:bg-pos-gold text-pos-black flex items-center justify-center font-bold text-base transition-colors">
+                                +
+                            </span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- GRID LAYOUT MODES (STANDARD OR COMPACT, UNIFORM 1:1 SQUARE PHOTOS) -->
+                <div
+                    v-else
+                    :class="[
+                        'grid gap-3',
+                        catalogLayout === 'compact'
+                            ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6'
+                            : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5',
+                    ]"
+                >
                     <button
                         v-for="product in filteredProducts"
                         :key="product.id"
@@ -117,8 +194,8 @@
                         "
                     >
                         <div>
-                            <!-- Product Photo Container -->
-                            <div class="relative w-full h-28 sm:h-32 rounded-xl overflow-hidden bg-pos-alabaster border border-pos-border/60 mb-2.5">
+                            <!-- Strictly Uniform 1:1 Square Product Photo Container -->
+                            <div class="relative w-full aspect-square rounded-xl overflow-hidden bg-pos-alabaster border border-pos-border/60 mb-2.5">
                                 <img
                                     :src="getProductImage(product, store.theme)"
                                     :alt="product.name"
@@ -129,7 +206,7 @@
                                 <!-- Selected Qty Badge -->
                                 <span
                                     v-if="qtyInCart(product.id) > 0"
-                                    class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-pos-black text-pos-gold font-bold text-[11px] shadow"
+                                    class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-pos-black text-pos-white font-bold text-[11px] shadow"
                                 >
                                     {{ formatQty(qtyInCart(product.id)) }}x dipilih
                                 </span>
@@ -138,7 +215,7 @@
                                 <span
                                     v-if="product.track_stock"
                                     :class="[
-                                        'absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-semibold backdrop-blur-sm',
+                                        'absolute top-2 right-2 px-2 py-0.5 rounded-lg text-[10px] font-bold',
                                         Number(product.stock_qty) <= 0
                                             ? 'bg-red-600 text-white'
                                             : Number(product.stock_qty) <= Number(product.min_stock)
@@ -154,9 +231,9 @@
                             <div class="px-0.5">
                                 <div class="text-[11px] text-pos-muted font-mono truncate">
                                     {{ product.sku }}
-                                    <span v-if="product.allow_decimal_qty" class="text-pos-gold font-sans font-medium">• Bisa Timbang/Desimal</span>
+                                    <span v-if="product.allow_decimal_qty" class="text-pos-black font-sans font-semibold">• Timbang/Kg</span>
                                 </div>
-                                <div class="font-semibold text-xs sm:text-sm text-pos-black mt-0.5 line-clamp-2 leading-snug">
+                                <div class="font-bold text-xs sm:text-sm text-pos-black mt-0.5 line-clamp-2 leading-snug">
                                     {{ product.name }}
                                 </div>
                             </div>
@@ -688,6 +765,18 @@ const tenderedInput = ref(null);
 const searchQuery = ref('');
 const selectedCategoryId = ref(null);
 const mobileCartOpen = ref(false);
+const catalogLayout = ref(localStorage.getItem('pos_catalog_layout') || 'grid');
+
+const layoutModes = [
+    { id: 'grid', label: 'Kartu Besar' },
+    { id: 'compact', label: 'Kartu Ringkas' },
+    { id: 'list', label: 'Daftar Baris' },
+];
+
+function setCatalogLayout(modeId) {
+    catalogLayout.value = modeId;
+    localStorage.setItem('pos_catalog_layout', modeId);
+}
 
 const showHeldModal = ref(false);
 const showPinModal = ref(false);

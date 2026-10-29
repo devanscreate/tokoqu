@@ -7,21 +7,21 @@
    ========================================================================== */
 :root,
 [data-theme="white-blue"] {
-    /* Paduan Putih & Biru (Default Terang & Jelas) */
-    --pos-black: 30 58 138;        /* #1E3A8A Deep Royal Blue for primary headers/bars */
-    --pos-charcoal: 29 78 216;     /* #1D4ED8 Rich Blue hover */
-    --pos-ink: 15 23 42;           /* #0F172A Ultra-crisp dark slate for body text */
+    /* Paduan Putih & Biru Facebook (#1877F2 - Cerah, Modern & Kontras Tinggi) */
+    --pos-black: 24 119 242;       /* #1877F2 Facebook Blue for primary headers/bars/buttons */
+    --pos-charcoal: 22 111 229;    /* #166FE5 Facebook Blue hover */
+    --pos-ink: 28 30 33;           /* #1C1E21 Facebook crisp dark text for body/cards */
     --pos-white: 255 255 255;      /* #FFFFFF Pure White */
-    --pos-alabaster: 240 246 255;  /* #F0F6FF Visible Soft Blue-White background */
-    --pos-stone: 224 236 255;      /* #E0ECFF Distinct Light Blue secondary surface */
-    --pos-border: 186 210 248;     /* #BAD2F8 Clear Blue-Tinted border */
-    --pos-muted: 51 65 85;         /* #334155 High-contrast readable secondary text */
-    --pos-gold: 37 99 235;         /* #2563EB Vibrant Blue accent */
-    --pos-gold-hover: 29 78 216;   /* #1D4ED8 */
+    --pos-alabaster: 240 242 245;  /* #F0F2F5 Facebook signature light background */
+    --pos-stone: 231 243 255;      /* #E7F3FF Soft Facebook Blue secondary surface */
+    --pos-border: 206 208 212;     /* #CED0D4 Clean crisp border */
+    --pos-muted: 75 85 99;         /* #4B5563 High-contrast readable secondary text */
+    --pos-gold: 24 119 242;        /* #1877F2 Facebook Blue accent */
+    --pos-gold-hover: 22 111 229;  /* #166FE5 */
     --pos-gold-light: 147 197 253; /* #93C5FD */
-    --pos-gold-tint: 219 234 254;  /* #DBEAFE Soft Blue highlight box */
-    --pos-gold-on-dark: 191 219 254; /* #BFDBFE Bright Ice Blue text on dark blue header */
-    --pos-on-gold: 255 255 255;    /* #FFFFFF White text on blue buttons */
+    --pos-gold-tint: 231 243 255;  /* #E7F3FF Soft Facebook Blue highlight tint */
+    --pos-gold-on-dark: 255 255 255; /* #FFFFFF Crisp White text on Facebook Blue headers */
+    --pos-on-gold: 255 255 255;    /* #FFFFFF Crisp White text on Facebook Blue buttons */
 }
 
 [data-theme="white-green"] {

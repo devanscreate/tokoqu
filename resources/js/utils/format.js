@@ -59,10 +59,85 @@ export function getTodayYymmdd(timezone = 'Asia/Jakarta') {
 }
 
 /**
- * Compress & resize an uploaded image file on the client into a lightweight WebP/JPEG Data URL (~15-30 KB).
- * Keeps the POS fast, avoids multipart upload overhead, and works 100% offline in IndexedDB.
+ * Render & compress an image into a standardized 200x200 square thumbnail (~4-10 KB).
+ * Supports layout adjustment:
+ * - fitMode: 'cover' (penuh kotak seragam) or 'contain' (utuh tanpa terpotong di tengah latar putih)
+ * - zoom: 1.0 to 2.0
+ * - offsetX / offsetY: -50 to +50 (%)
  */
-export function compressImageFile(file, maxSize = 320, quality = 0.82) {
+export function processProductImage(sourceImgOrDataUrl, options = {}) {
+    const targetSize = options.size || 200;
+    const fitMode = options.fitMode || 'cover'; // 'cover' | 'contain'
+    const zoom = Math.max(0.5, Math.min(2.5, Number(options.zoom || 1)));
+    const offsetX = Math.max(-50, Math.min(50, Number(options.offsetX || 0)));
+    const offsetY = Math.max(-50, Math.min(50, Number(options.offsetY || 0)));
+
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Format gambar tidak didukung.'));
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = targetSize;
+            canvas.height = targetSize;
+            const ctx = canvas.getContext('2d');
+
+            // Clean white background so transparent PNGs or 'contain' mode look crisp and uniform
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, targetSize, targetSize);
+
+            const iw = img.width || 1;
+            const ih = img.height || 1;
+
+            let baseScale =
+                fitMode === 'contain'
+                    ? Math.min(targetSize / iw, targetSize / ih)
+                    : Math.max(targetSize / iw, targetSize / ih);
+
+            const finalScale = baseScale * zoom;
+            const drawW = iw * finalScale;
+            const drawH = ih * finalScale;
+
+            const shiftX = (offsetX / 100) * targetSize;
+            const shiftY = (offsetY / 100) * targetSize;
+
+            const dx = (targetSize - drawW) / 2 + shiftX;
+            const dy = (targetSize - drawH) / 2 + shiftY;
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, dx, dy, drawW, drawH);
+
+            // Ultra-lightweight compression: aim for <= 12 KB
+            let quality = 0.68;
+            let dataUrl = canvas.toDataURL('image/webp', quality);
+            if (!dataUrl.startsWith('data:image/webp')) {
+                dataUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+
+            // Step down quality if still above ~15 KB
+            while (dataUrl.length > 20000 && quality > 0.4) {
+                quality -= 0.1;
+                dataUrl = canvas.toDataURL('image/webp', quality);
+                if (!dataUrl.startsWith('data:image/webp')) {
+                    dataUrl = canvas.toDataURL('image/jpeg', quality);
+                }
+            }
+
+            const sizeBytes = Math.round((dataUrl.length * 3) / 4);
+            const sizeKb = (sizeBytes / 1024).toFixed(1);
+
+            resolve({
+                dataUrl,
+                sizeKb,
+                width: targetSize,
+                height: targetSize,
+            });
+        };
+        img.src = sourceImgOrDataUrl;
+    });
+}
+
+export function readRawImageFile(file) {
     return new Promise((resolve, reject) => {
         if (!file || !file.type.startsWith('image/')) {
             reject(new Error('File yang dipilih bukan gambar yang valid.'));
@@ -70,50 +145,24 @@ export function compressImageFile(file, maxSize = 320, quality = 0.82) {
         }
         const reader = new FileReader();
         reader.onerror = () => reject(new Error('Gagal membaca file gambar.'));
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onerror = () => reject(new Error('Format gambar tidak didukung.'));
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > maxSize) {
-                        height = Math.round((height * maxSize) / width);
-                        width = maxSize;
-                    }
-                } else if (height > maxSize) {
-                    width = Math.round((width * maxSize) / height);
-                    height = maxSize;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(0, 0, width, height);
-                ctx.drawImage(img, 0, 0, width, height);
-
-                let dataUrl = canvas.toDataURL('image/webp', quality);
-                if (!dataUrl.startsWith('data:image/webp')) {
-                    dataUrl = canvas.toDataURL('image/jpeg', quality);
-                }
-                resolve(dataUrl);
-            };
-            img.src = e.target.result;
-        };
+        reader.onload = (e) => resolve(e.target.result);
         reader.readAsDataURL(file);
     });
+}
+
+export async function compressImageFile(file, maxSize = 200, quality = 0.68) {
+    const raw = await readRawImageFile(file);
+    const res = await processProductImage(raw, { size: maxSize, fitMode: 'cover', zoom: 1, quality });
+    return res.dataUrl;
 }
 
 export const AVAILABLE_THEMES = [
     {
         id: 'white-blue',
         label: 'Putih & Biru',
-        primaryHex: '#2563EB',
-        darkHex: '#1E3A8A',
-        bgHex: '#DBEAFE',
+        primaryHex: '#1877F2',
+        darkHex: '#1877F2',
+        bgHex: '#E7F3FF',
         borderHex: '#93C5FD',
     },
     {

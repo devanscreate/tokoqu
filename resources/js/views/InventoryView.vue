@@ -53,37 +53,135 @@
                     </button>
                 </div>
 
-                <!-- PHOTO UPLOADER & PREVIEW -->
-                <div class="p-3.5 rounded-2xl bg-pos-alabaster border border-pos-border flex items-center gap-4">
-                    <img
-                        :src="getProductImage(productForm, store.theme)"
-                        alt="Preview Produk"
-                        class="w-20 h-20 rounded-xl object-cover bg-pos-white border border-pos-border shrink-0"
-                    />
-                    <div class="space-y-2 flex-1 min-w-0">
-                        <div class="text-xs font-semibold text-pos-black">Foto Produk</div>
-                        <div class="flex flex-wrap gap-2">
-                            <label class="cursor-pointer px-3 py-1.5 rounded-xl bg-pos-black text-pos-gold text-xs font-semibold hover:bg-pos-charcoal transition-colors">
-                                Pilih Foto
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    @change="handleProductImageUpload"
-                                    class="hidden"
-                                />
-                            </label>
+                <!-- PHOTO UPLOADER, UNIFORM 200x200 PREVIEW & LAYOUT CONTROLS -->
+                <div class="p-4 rounded-2xl bg-pos-alabaster border border-pos-border space-y-3">
+                    <div class="flex items-center gap-4">
+                        <div class="w-24 h-24 aspect-square rounded-xl overflow-hidden bg-pos-white border-2 border-pos-border shrink-0 shadow-sm">
+                            <img
+                                :src="getProductImage(productForm, store.theme)"
+                                alt="Preview Produk"
+                                class="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div class="space-y-2 flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="text-xs font-bold text-pos-black">Foto Produk (Seragam 1:1)</span>
+                                <span
+                                    v-if="compressedSizeKb"
+                                    class="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-mono font-bold text-emerald-800"
+                                >
+                                    {{ compressedSizeKb }} KB • 200×200px
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <label class="cursor-pointer px-3 py-1.5 rounded-xl bg-pos-black text-pos-white text-xs font-semibold hover:bg-pos-charcoal transition-colors">
+                                    Pilih Foto
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        @change="handleProductImageUpload"
+                                        class="hidden"
+                                    />
+                                </label>
+                                <button
+                                    v-if="productForm.image_url"
+                                    type="button"
+                                    @click="clearProductImage"
+                                    class="px-2.5 py-1.5 rounded-xl border border-pos-border bg-pos-white text-xs font-semibold text-pos-danger"
+                                >
+                                    Hapus Foto
+                                </button>
+                            </div>
+                            <p class="text-[11px] text-pos-muted leading-snug">
+                                Ukuran foto diseragamkan 200×200px & dikompres super kecil (~5–10 KB) agar aplikasi tetap kencang.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Photo Layout Adjuster (Visible when a photo is uploaded) -->
+                    <div v-if="rawImageSource" class="pt-3 border-t border-pos-border space-y-2.5 text-xs">
+                        <div class="font-bold text-pos-black flex items-center justify-between">
+                            <span>Atur Layout & Posisi Foto:</span>
                             <button
-                                v-if="productForm.image_url"
                                 type="button"
-                                @click="productForm.image_url = ''"
-                                class="px-2.5 py-1.5 rounded-xl border border-pos-border bg-pos-white text-xs text-pos-danger"
+                                @click="resetImageAdjustments"
+                                class="text-[11px] font-semibold text-pos-muted hover:text-pos-black underline"
                             >
-                                Hapus Foto
+                                Reset Posisi
                             </button>
                         </div>
-                        <p class="text-[11px] text-pos-muted leading-snug">
-                            Foto otomatis diperkecil agar aplikasi tetap ringan dan tampil saat offline.
-                        </p>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                @click="setImageFitMode('cover')"
+                                :class="[
+                                    'py-1.5 px-2.5 rounded-xl border text-xs font-semibold transition-all',
+                                    imageAdjust.fitMode === 'cover'
+                                        ? 'bg-pos-black text-pos-white border-pos-black'
+                                        : 'bg-pos-white text-pos-black border-pos-border',
+                                ]"
+                            >
+                                Penuh Kotak (Rapi)
+                            </button>
+                            <button
+                                type="button"
+                                @click="setImageFitMode('contain')"
+                                :class="[
+                                    'py-1.5 px-2.5 rounded-xl border text-xs font-semibold transition-all',
+                                    imageAdjust.fitMode === 'contain'
+                                        ? 'bg-pos-black text-pos-white border-pos-black'
+                                        : 'bg-pos-white text-pos-black border-pos-border',
+                                ]"
+                            >
+                                Utuh (Tanpa Terpotong)
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 pt-1">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-pos-muted mb-0.5">
+                                    Perbesar ({{ imageAdjust.zoom.toFixed(1) }}x)
+                                </label>
+                                <input
+                                    v-model.number="imageAdjust.zoom"
+                                    @input="reprocessUploadedImage"
+                                    type="range"
+                                    min="0.8"
+                                    max="2.0"
+                                    step="0.05"
+                                    class="w-full accent-pos-gold"
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-pos-muted mb-0.5">
+                                    Geser Kiri/Kanan
+                                </label>
+                                <input
+                                    v-model.number="imageAdjust.offsetX"
+                                    @input="reprocessUploadedImage"
+                                    type="range"
+                                    min="-40"
+                                    max="40"
+                                    step="2"
+                                    class="w-full accent-pos-gold"
+                                />
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-pos-muted mb-0.5">
+                                    Geser Atas/Bawah
+                                </label>
+                                <input
+                                    v-model.number="imageAdjust.offsetY"
+                                    @input="reprocessUploadedImage"
+                                    type="range"
+                                    min="-40"
+                                    max="40"
+                                    step="2"
+                                    class="w-full accent-pos-gold"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -482,13 +580,28 @@
 import { ref } from 'vue';
 import { usePosStore } from '../stores/posStore';
 import { apiRequest } from '../utils/api';
-import { compressImageFile, formatDateTime, formatQty, formatRupiah, getProductImage } from '../utils/format';
+import {
+    formatDateTime,
+    formatQty,
+    formatRupiah,
+    getProductImage,
+    processProductImage,
+    readRawImageFile,
+} from '../utils/format';
 
 const store = usePosStore();
 const activeTab = ref('products');
 const errorMsg = ref('');
 const successMsg = ref('');
 const stockCardData = ref(null);
+const rawImageSource = ref('');
+const compressedSizeKb = ref('');
+const imageAdjust = ref({
+    fitMode: 'cover',
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0,
+});
 
 const tabs = [
     { id: 'products', label: '1. Daftar Produk & Foto' },
@@ -538,6 +651,8 @@ function movementLabel(type) {
 }
 
 function resetProductForm() {
+    rawImageSource.value = '';
+    compressedSizeKb.value = '';
     productForm.value = {
         id: null,
         sku: '',
@@ -555,6 +670,11 @@ function resetProductForm() {
 }
 
 function editProduct(p) {
+    rawImageSource.value = p.image_url || '';
+    compressedSizeKb.value = p.image_url
+        ? ((Math.round((p.image_url.length * 3) / 4)) / 1024).toFixed(1)
+        : '';
+    imageAdjust.value = { fitMode: 'cover', zoom: 1, offsetX: 0, offsetY: 0 };
     productForm.value = {
         id: p.id,
         sku: p.sku,
@@ -572,12 +692,47 @@ function editProduct(p) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function clearProductImage() {
+    productForm.value.image_url = '';
+    rawImageSource.value = '';
+    compressedSizeKb.value = '';
+}
+
+function setImageFitMode(mode) {
+    imageAdjust.value.fitMode = mode;
+    reprocessUploadedImage();
+}
+
+function resetImageAdjustments() {
+    imageAdjust.value = { fitMode: 'cover', zoom: 1, offsetX: 0, offsetY: 0 };
+    reprocessUploadedImage();
+}
+
+async function reprocessUploadedImage() {
+    if (!rawImageSource.value) return;
+    try {
+        const res = await processProductImage(rawImageSource.value, {
+            size: 200,
+            fitMode: imageAdjust.value.fitMode,
+            zoom: imageAdjust.value.zoom,
+            offsetX: imageAdjust.value.offsetX,
+            offsetY: imageAdjust.value.offsetY,
+        });
+        productForm.value.image_url = res.dataUrl;
+        compressedSizeKb.value = res.sizeKb;
+    } catch (err) {
+        errorMsg.value = err.message;
+    }
+}
+
 async function handleProductImageUpload(event) {
     const file = event.target.files?.[0];
     if (!file) return;
     errorMsg.value = '';
     try {
-        productForm.value.image_url = await compressImageFile(file, 320, 0.82);
+        rawImageSource.value = await readRawImageFile(file);
+        imageAdjust.value = { fitMode: 'cover', zoom: 1, offsetX: 0, offsetY: 0 };
+        await reprocessUploadedImage();
     } catch (err) {
         errorMsg.value = err.message;
     } finally {
